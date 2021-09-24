@@ -20,7 +20,7 @@ except ModuleNotFoundError:
 
 def load_m1_1m(path: str = ml_1m_ratings_path,
                type_res: str = 'list',
-               if_rating: bool = False) -> Union[List[List[int]], Dict[int, List[int]]]:
+               if_rating: bool = False) -> Union[list, dict]:
     data_dict = {}
     data_list = []
     for line in open(path, 'r'):
@@ -31,10 +31,16 @@ def load_m1_1m(path: str = ml_1m_ratings_path,
         timestamp = int(timestamp)
 
         if type_res == 'dict':
-            if data_dict.get(user_id):
-                data_dict[user_id].append(item_id)
+            if if_rating:
+                if data_dict.get(user_id):
+                    data_dict[user_id][item_id] = rating
+                else:
+                    data_dict[user_id] = {item_id: rating}
             else:
-                data_dict[user_id] = [item_id]
+                if data_dict.get(user_id):
+                    data_dict[user_id].append(item_id)
+                else:
+                    data_dict[user_id] = [item_id]
         elif type_res == 'list':
             if if_rating:
                 data_list.append([user_id, item_id, rating])
