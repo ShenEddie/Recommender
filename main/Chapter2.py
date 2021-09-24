@@ -12,6 +12,7 @@ import sys
 import math
 import random
 from typing import List, Dict
+from operator import itemgetter
 
 sys.path.append('../')
 try:
@@ -38,7 +39,7 @@ train_list, test_list = split_data(data, 8, 1)
 
 
 # %% User similarity.
-def user_similarity(train: Dict[int, Dict[int, int]]):
+def user_similarity(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, float]]:
     # Build inverse table for item_users.
     item_users = dict()
     for user, items in train.items():
@@ -75,12 +76,29 @@ def user_similarity(train: Dict[int, Dict[int, int]]):
 
 
 train_sample = {
-    1: {1: 5, 2: 4, 4: 5},
-    2: {1: 4, 3: 5},
-    3: {2: 5, 5: 4},
-    4: {3: 5, 4: 4, 5: 5}
+    1: {1: 1, 2: 1, 4: 1},
+    2: {1: 1, 3: 1},
+    3: {2: 1, 5: 1},
+    4: {3: 1, 4: 1, 5: 1}
 }
 
 train_dict = transfer_list2dict(train_list)
 W_sample = user_similarity(train_sample)
 W = user_similarity(train_dict)
+
+
+# %% UserCF algorithm.
+def recommend_user_cf(user: int,
+                      train: Dict[int, Dict[int, int]],
+                      W: Dict[int, Dict[int, float]],
+                      K: int):
+    rank = dict()
+    interacted_item = train[user]
+    for v, wuv in sorted(W[user].items(), key=itemgetter(1), reverse=True)[0:K]:
+        for i, rvi in train[v].items():
+            if i not in interacted_item:
+                rank[i] = rank.get(i, 0) + wuv * rvi
+    return rank
+
+
+rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
