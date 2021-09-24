@@ -19,9 +19,7 @@ except ModuleNotFoundError:
 
 
 def load_m1_1m(path: str = ml_1m_ratings_path,
-               type_res: str = 'list',
-               if_rating: bool = False) -> Union[list, dict]:
-    data_dict = {}
+               if_rating: bool = True) -> List[List[int]]:
     data_list = []
     for line in open(path, 'r'):
         user_id, item_id, rating, timestamp = line.strip().split('::')
@@ -29,28 +27,28 @@ def load_m1_1m(path: str = ml_1m_ratings_path,
         item_id = int(item_id)
         rating = int(rating)
         timestamp = int(timestamp)
+        if if_rating:
+            data_list.append([user_id, item_id, rating])
+        else:
+            data_list.append([user_id, item_id])
+    return data_list
 
-        if type_res == 'dict':
-            if if_rating:
-                if data_dict.get(user_id):
-                    data_dict[user_id][item_id] = rating
-                else:
-                    data_dict[user_id] = {item_id: rating}
-            else:
-                if data_dict.get(user_id):
-                    data_dict[user_id].append(item_id)
-                else:
-                    data_dict[user_id] = [item_id]
-        elif type_res == 'list':
-            if if_rating:
-                data_list.append([user_id, item_id, rating])
-            else:
-                data_list.append([user_id, item_id])
 
-    # Return result.
-    if type_res == 'dict':
-        return data_dict
-    elif type_res == 'list':
-        return data_list
+def transfer_list2dict(data: List[List[int]],
+                       if_rating: bool = True) -> Dict:
+    data_dict = dict()
+    if if_rating:
+        for line in data:
+            user_id, item_id, rating = line
+            if data_dict.get(user_id):
+                data_dict[user_id][item_id] = rating
+            else:
+                data_dict[user_id] = {item_id: rating}
     else:
-        raise RuntimeError('Wrong type_res')
+        for line in data:
+            user_id, item_id = line
+            if data_dict.get(user_id):
+                data_dict[user_id].append(item_id)
+            else:
+                data_dict[user_id] = [item_id]
+    return data_dict
