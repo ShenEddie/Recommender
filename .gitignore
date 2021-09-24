@@ -2,3 +2,4 @@
 docs/*
 data/*
 .ipynb_checkpoints/*
+*.pyc
