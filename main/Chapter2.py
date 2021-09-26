@@ -9,10 +9,12 @@
 
 # %% Import packages.
 import sys
+import gc
 import math
 import random
 from typing import List, Dict, Callable
 from operator import itemgetter
+from tqdm import tqdm
 
 sys.path.append('../')
 try:
@@ -36,6 +38,11 @@ def split_data(data: List[List[int]], M: int, k: int, seed: int = 1234):
 
 data = load_m1_1m()
 train_list, test_list = split_data(data, 8, 1)
+train_dict = transfer_list2dict(train_list)
+test_dict = transfer_list2dict(test_list)
+
+del train_list, test_list, data
+gc.collect()
 
 
 # %% User similarity.
@@ -82,7 +89,6 @@ train_sample = {
     4: {3: 1, 4: 1, 5: 1}
 }
 
-train_dict = transfer_list2dict(train_list)
 W_sample = user_similarity(train_sample)
 W = user_similarity(train_dict)
 
@@ -108,12 +114,14 @@ rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
 def recall_user_cf(train: Dict[int, Dict[int, int]],
                    test: Dict[int, Dict[int, int]],
                    W: Dict[int, Dict[int, float]],
+                   k: int,
                    n: int) -> float:
     hit = 0
     all = 0
-    for user in train.keys():
-        tu = test[user]
-        rank = recommend_user_cf(user, train, W, n)
+    for user in tqdm(train.keys()):
+        tu = test.get(user, {})
+        rank = recommend_user_cf(user, train, W, k)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
         for item, pui in rank:
             if item in tu:
                 hit += 1
@@ -121,18 +129,26 @@ def recall_user_cf(train: Dict[int, Dict[int, int]],
     return hit / all
 
 
+print(recall_user_cf(train_dict, test_dict, W, 80, 10))
+
+
 # %% Precision
 def precision_user_cf(train: Dict[int, Dict[int, int]],
                       test: Dict[int, Dict[int, int]],
                       W: Dict[int, Dict[int, float]],
+                      k: int,
                       n: int) -> float:
     hit = 0
     all = 0
-    for user in train.keys():
-        tu = test[user]
-        rank = recommend_user_cf(user, train, W, n)
+    for user in tqdm(train.keys()):
+        tu = test.get(user, {})
+        rank = recommend_user_cf(user, train, W, k)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
         for item, pui in rank:
             if item in tu:
                 hit += 1
         all += len(rank)
     return hit / all
+
+
+print(precision_user_cf(train_dict, test_dict, W, 80, 10))
