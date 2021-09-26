@@ -12,7 +12,7 @@ import sys
 import gc
 import math
 import random
-from typing import List, Dict, Callable
+from typing import List, Dict
 from operator import itemgetter
 from tqdm import tqdm
 
@@ -152,3 +152,27 @@ def precision_user_cf(train: Dict[int, Dict[int, int]],
 
 
 print(precision_user_cf(train_dict, test_dict, W, 80, 10))
+
+
+# %% Coverage.
+def coverage_user_cf(train: Dict[int, Dict[int, int]],
+                     test: Dict[int, Dict[int, int]],
+                     W: Dict[int, Dict[int, float]],
+                     k: int,
+                     n: int) -> float:
+    recommend_items = set()
+    all_items = set()
+    for user in tqdm(train.keys()):
+        for item in train[user].keys():
+            all_items.add(item)
+        rank = recommend_user_cf(user, train, W, k)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
+        for item, pui in rank:
+            recommend_items.add(item)
+    coverage_rate = len(recommend_items) / len(all_items)
+    return coverage_rate
+
+
+print(coverage_user_cf(train_dict, test_dict, W, 80, 10))
+
+
