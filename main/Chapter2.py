@@ -176,3 +176,26 @@ def coverage_user_cf(train: Dict[int, Dict[int, int]],
 print(coverage_user_cf(train_dict, test_dict, W, 80, 10))
 
 
+# %% Popularity.
+def popularity_user_cf(train: Dict[int, Dict[int, int]],
+                       test: Dict[int, Dict[int, int]],
+                       W: Dict[int, Dict[int, float]],
+                       k: int,
+                       n: int):
+    item_popularity = dict()
+    for user, items in train.items():
+        for item in items.keys():
+            item_popularity[item] = item_popularity.get(item, 0) + 1
+    ret = 0
+    num = 0
+    for user in tqdm(train.keys()):
+        rank = recommend_user_cf(user, train, W, k)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
+        for item, pui in rank:
+            ret += math.log(1 + item_popularity[item])
+            num += 1
+    ret /= num
+    return ret
+
+
+print(popularity_user_cf(train_dict, test_dict, W, 80, 10))
