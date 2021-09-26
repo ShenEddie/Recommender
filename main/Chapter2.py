@@ -11,7 +11,7 @@
 import sys
 import math
 import random
-from typing import List, Dict
+from typing import List, Dict, Callable
 from operator import itemgetter
 
 sys.path.append('../')
@@ -102,3 +102,37 @@ def recommend_user_cf(user: int,
 
 
 rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
+
+
+# %% Recall.
+def recall_user_cf(train: Dict[int, Dict[int, int]],
+                   test: Dict[int, Dict[int, int]],
+                   W: Dict[int, Dict[int, float]],
+                   n: int) -> float:
+    hit = 0
+    all = 0
+    for user in train.keys():
+        tu = test[user]
+        rank = recommend_user_cf(user, train, W, n)
+        for item, pui in rank:
+            if item in tu:
+                hit += 1
+        all += len(tu)
+    return hit / all
+
+
+# %% Precision
+def precision_user_cf(train: Dict[int, Dict[int, int]],
+                      test: Dict[int, Dict[int, int]],
+                      W: Dict[int, Dict[int, float]],
+                      n: int) -> float:
+    hit = 0
+    all = 0
+    for user in train.keys():
+        tu = test[user]
+        rank = recommend_user_cf(user, train, W, n)
+        for item, pui in rank:
+            if item in tu:
+                hit += 1
+        all += len(rank)
+    return hit / all
