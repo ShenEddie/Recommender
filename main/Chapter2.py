@@ -49,7 +49,7 @@ gc.collect()
 def user_similarity(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, float]]:
     # Build inverse table for item_users.
     item_users = dict()
-    for user, items in train.items():
+    for user, items in tqdm(train.items()):
         for item in items.keys():
             if item_users.get(item):
                 item_users[item].add(user)
@@ -59,7 +59,7 @@ def user_similarity(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, flo
     # Calculate co-rated items between users.
     C = dict()
     N = dict()
-    for i, users in item_users.items():
+    for i, users in tqdm(item_users.items()):
         for u in users:
             N[u] = N.get(u, 0) + 1
             for v in users:
@@ -73,7 +73,7 @@ def user_similarity(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, flo
 
     # Calculate finial similarity matrix W.
     W = dict()
-    for u, related_users in C.items():
+    for u, related_users in tqdm(C.items()):
         for v, cuv in related_users.items():
             if W.get(u):
                 W[u][v] = cuv / math.sqrt(N[u] * N[v])
@@ -82,15 +82,55 @@ def user_similarity(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, flo
     return W
 
 
-train_sample = {
-    1: {1: 1, 2: 1, 4: 1},
-    2: {1: 1, 3: 1},
-    3: {2: 1, 5: 1},
-    4: {3: 1, 4: 1, 5: 1}
-}
-
-W_sample = user_similarity(train_sample)
+# train_sample = {
+#     1: {1: 1, 2: 1, 4: 1},
+#     2: {1: 1, 3: 1},
+#     3: {2: 1, 5: 1},
+#     4: {3: 1, 4: 1, 5: 1}
+# }
+#
+# W_sample = user_similarity(train_sample)
 W = user_similarity(train_dict)
+
+
+# %% User similarity iif.
+def user_similarity_iif(train):
+    # Build inverse table for item_users.
+    item_users = dict()
+    for user, items in tqdm(train.items()):
+        for item in items.keys():
+            if item_users.get(item):
+                item_users[item].add(user)
+            else:
+                item_users[item] = {user}
+
+    # Calculate co-rated items between users.
+    C = dict()
+    N = dict()
+    for i, users in tqdm(item_users.items()):
+        for u in users:
+            N[u] = N.get(u, 0) + 1
+            for v in users:
+                if u == v:
+                    continue
+                else:
+                    if C.get(u):
+                        C[u][v] = C[u].get(v, 0) + 1 / math.log(1 + len(users))
+                    else:
+                        C[u] = {v: 1}
+
+    # Calculate finial similarity matrix W.
+    W = dict()
+    for u, related_users in tqdm(C.items()):
+        for v, cuv in related_users.items():
+            if W.get(u):
+                W[u][v] = cuv / math.sqrt(N[u] * N[v])
+            else:
+                W[u] = {v: cuv / math.sqrt(N[u] * N[v])}
+    return W
+
+
+W_iif = user_similarity_iif(train_dict)
 
 
 # %% UserCF algorithm.
@@ -107,7 +147,7 @@ def recommend_user_cf(user: int,
     return rank
 
 
-rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
+# rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
 
 
 # %% Recall.
@@ -130,6 +170,7 @@ def recall_user_cf(train: Dict[int, Dict[int, int]],
 
 
 print(recall_user_cf(train_dict, test_dict, W, 80, 10))
+print(recall_user_cf(train_dict, test_dict, W_iif, 80, 10))
 
 
 # %% Precision
@@ -152,6 +193,7 @@ def precision_user_cf(train: Dict[int, Dict[int, int]],
 
 
 print(precision_user_cf(train_dict, test_dict, W, 80, 10))
+print(precision_user_cf(train_dict, test_dict, W_iif, 80, 10))
 
 
 # %% Coverage.
@@ -174,6 +216,7 @@ def coverage_user_cf(train: Dict[int, Dict[int, int]],
 
 
 print(coverage_user_cf(train_dict, test_dict, W, 80, 10))
+print(coverage_user_cf(train_dict, test_dict, W_iif, 80, 10))
 
 
 # %% Popularity.
@@ -199,3 +242,4 @@ def popularity_user_cf(train: Dict[int, Dict[int, int]],
 
 
 print(popularity_user_cf(train_dict, test_dict, W, 80, 10))
+print(popularity_user_cf(train_dict, test_dict, W_iif, 80, 10))
