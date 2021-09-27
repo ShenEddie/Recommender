@@ -88,8 +88,8 @@ W = item_similarity(train_dict)
 
 
 # %% ItemCF algorithm.
-def recommend_item_cf(train: Dict[int, Dict[int, int]],
-                      user: int,
+def recommend_item_cf(user: int,
+                      train: Dict[int, Dict[int, int]],
                       W: Dict[int, Dict[int, float]],
                       K: int) -> Dict[int, float]:
     rank = dict()
@@ -101,3 +101,25 @@ def recommend_item_cf(train: Dict[int, Dict[int, int]],
             else:
                 rank[j] = rank.get(j, 0) + pi * wj
     return rank
+
+
+# %% Recall.
+def recall_item_cf(train: Dict[int, Dict[int, int]],
+                   test: Dict[int, Dict[int, int]],
+                   W: Dict[int, Dict[int, float]],
+                   k: int,
+                   n: int) -> float:
+    hit = 0
+    all = 0
+    for user in tqdm(train.keys()):
+        tu = test.get(user, {})
+        rank = recommend_item_cf(user, train, W, k)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
+        for item, pui in rank:
+            if item in tu:
+                hit += 1
+        all += len(tu)
+    return hit / all
+
+
+print(recall_item_cf(train_dict, test_dict, W, 10, 10))
