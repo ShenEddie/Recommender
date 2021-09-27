@@ -63,7 +63,7 @@ def item_similarity(train: Dict[int, Dict[int, int]]):
                         C[i][j] = C[i].get(j, 0) + 1
                     else:
                         C[i] = {j: 1}
-    pprint(C)
+    # pprint(C)
 
     # Calculate finial similarity matrix W.
     W: Dict[int, Dict[int, float]] = dict()
@@ -85,3 +85,19 @@ def item_similarity(train: Dict[int, Dict[int, int]]):
 # }
 # W_sample = item_similarity(train_sample)
 W = item_similarity(train_dict)
+
+
+# %% ItemCF algorithm.
+def recommend_item_cf(train: Dict[int, Dict[int, int]],
+                      user: int,
+                      W: Dict[int, Dict[int, float]],
+                      K: int) -> Dict[int, float]:
+    rank = dict()
+    ru = train[user]
+    for i, pi in ru.items():
+        for j, wj in sorted(W[i].items(), key=itemgetter(1), reverse=True)[0:K]:
+            if j in ru:
+                continue
+            else:
+                rank[j] = rank.get(j, 0) + pi * wj
+    return rank
