@@ -126,7 +126,7 @@ print(recall_item_cf(train_dict, test_dict, W, 10, 10))
 
 
 # %% Precision
-def precision_user_cf(train: Dict[int, Dict[int, int]],
+def precision_item_cf(train: Dict[int, Dict[int, int]],
                       test: Dict[int, Dict[int, int]],
                       W: Dict[int, Dict[int, float]],
                       k: int,
@@ -144,4 +144,26 @@ def precision_user_cf(train: Dict[int, Dict[int, int]],
     return hit / all
 
 
-print(precision_user_cf(train_dict, test_dict, W, 80, 10))
+print(precision_item_cf(train_dict, test_dict, W, 10, 10))
+
+
+# %% Coverage.
+def coverage_item_cf(train: Dict[int, Dict[int, int]],
+                     test: Dict[int, Dict[int, int]],
+                     W: Dict[int, Dict[int, float]],
+                     k: int,
+                     n: int) -> float:
+    recommend_items = set()
+    all_items = set()
+    for user in tqdm(train.keys()):
+        for item in train[user].keys():
+            all_items.add(item)
+        rank = recommend_item_cf(user, train, W, k)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
+        for item, pui in rank:
+            recommend_items.add(item)
+    coverage_rate = len(recommend_items) / len(all_items)
+    return coverage_rate
+
+
+print(coverage_item_cf(train_dict, test_dict, W, 10, 10))
