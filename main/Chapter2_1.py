@@ -122,7 +122,7 @@ W_iuf = item_similarity_iuf(train_dict)
 # %% Normalize similarity matrix.
 def similarity_norm(W: Dict[int, Dict[int, Union[int, float]]]
                     ) -> Dict[int, Dict[int, float]]:
-    for i, wi in W.items():
+    for i, wi in tqdm(W.items()):
         max_wij = max(wi.values())
         for j, wij in wi.items():
             W[i][j] = wij / max_wij
