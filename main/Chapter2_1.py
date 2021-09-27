@@ -116,6 +116,9 @@ def item_similarity_iuf(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int,
     return W
 
 
+W_iuf = item_similarity_iuf(train_dict)
+
+
 # %% ItemCF algorithm.
 def recommend_item_cf(user: int,
                       train: Dict[int, Dict[int, int]],
@@ -152,6 +155,7 @@ def recall_item_cf(train: Dict[int, Dict[int, int]],
 
 
 print(recall_item_cf(train_dict, test_dict, W, 10, 10))
+print(recall_item_cf(train_dict, test_dict, W_iuf, 10, 10))
 
 
 # %% Precision
@@ -174,6 +178,7 @@ def precision_item_cf(train: Dict[int, Dict[int, int]],
 
 
 print(precision_item_cf(train_dict, test_dict, W, 10, 10))
+print(precision_item_cf(train_dict, test_dict, W_iuf, 10, 10))
 
 
 # %% Coverage.
@@ -196,6 +201,7 @@ def coverage_item_cf(train: Dict[int, Dict[int, int]],
 
 
 print(coverage_item_cf(train_dict, test_dict, W, 10, 10))
+print(coverage_item_cf(train_dict, test_dict, W_iuf, 10, 10))
 
 
 # %% Popularity.
@@ -221,3 +227,4 @@ def popularity_item_cf(train: Dict[int, Dict[int, int]],
 
 
 print(popularity_item_cf(train_dict, test_dict, W, 10, 10))
+print(popularity_item_cf(train_dict, test_dict, W_iuf, 10, 10))
