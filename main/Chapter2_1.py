@@ -122,11 +122,12 @@ W_iuf = item_similarity_iuf(train_dict)
 # %% Normalize similarity matrix.
 def similarity_norm(W: Dict[int, Dict[int, Union[int, float]]]
                     ) -> Dict[int, Dict[int, float]]:
+    W_normed = W.copy()  # !!!
     for i, wi in tqdm(W.items()):
         max_wij = max(wi.values())
         for j, wij in wi.items():
-            W[i][j] = wij / max_wij
-    return W
+            W_normed[i][j] = wij / max_wij
+    return W_normed
 
 
 W_normed = similarity_norm(W_iuf)
@@ -241,3 +242,4 @@ def popularity_item_cf(train: Dict[int, Dict[int, int]],
 
 print(popularity_item_cf(train_dict, test_dict, W, 10, 10))
 print(popularity_item_cf(train_dict, test_dict, W_iuf, 10, 10))
+print(popularity_item_cf(train_dict, test_dict, W_normed, 10, 10))
