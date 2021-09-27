@@ -13,6 +13,7 @@ import sys
 import gc
 import math
 import random
+import copy
 from typing import List, Dict, Union
 from operator import itemgetter
 from tqdm import tqdm
@@ -122,7 +123,7 @@ W_iuf = item_similarity_iuf(train_dict)
 # %% Normalize similarity matrix.
 def similarity_norm(W: Dict[int, Dict[int, Union[int, float]]]
                     ) -> Dict[int, Dict[int, float]]:
-    W_normed = W.copy()  # !!!
+    W_normed = copy.deepcopy(W)  # !!!
     for i, wi in tqdm(W.items()):
         max_wij = max(wi.values())
         for j, wij in wi.items():
