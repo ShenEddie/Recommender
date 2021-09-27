@@ -13,7 +13,7 @@ import sys
 import gc
 import math
 import random
-from typing import List, Dict
+from typing import List, Dict, Union
 from operator import itemgetter
 from tqdm import tqdm
 from pprint import pprint
@@ -117,6 +117,19 @@ def item_similarity_iuf(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int,
 
 
 W_iuf = item_similarity_iuf(train_dict)
+
+
+# %% Normalize similarity matrix.
+def similarity_norm(W: Dict[int, Dict[int, Union[int, float]]]
+                    ) -> Dict[int, Dict[int, float]]:
+    for i, wi in W.items():
+        max_wij = max(wi.values())
+        for j, wij in wi.items():
+            W[i][j] = wij / max_wij
+    return W
+
+
+W_normed = similarity_norm(W_iuf)
 
 
 # %% ItemCF algorithm.
