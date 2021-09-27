@@ -117,7 +117,7 @@ def user_similarity_iif(train):
                     if C.get(u):
                         C[u][v] = C[u].get(v, 0) + 1 / math.log(1 + len(users))
                     else:
-                        C[u] = {v: 1}
+                        C[u] = {v: 1 / math.log(1 + len(users))}
 
     # Calculate finial similarity matrix W.
     W = dict()
