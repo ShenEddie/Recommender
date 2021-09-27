@@ -87,6 +87,35 @@ def item_similarity(train: Dict[int, Dict[int, int]]):
 W = item_similarity(train_dict)
 
 
+# %% Item similarity iuf.
+def item_similarity_iuf(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, float]]:
+    # Calculate co-rated users between items.
+    C: Dict[int, Dict[int, float]] = dict()
+    N: Dict[int, int] = dict()
+    for u, items in tqdm(train.items()):
+        for i in items.keys():
+            N[i] = N.get(i, 0) + 1
+            for j in items.keys():
+                if i == j:
+                    continue
+                else:
+                    if C.get(i):
+                        C[i][j] = C[i].get(j, 0) + 1 / math.log(1 + len(items))
+                    else:
+                        C[i] = {j: 1 / math.log(1 + len(items))}
+    # pprint(C)
+
+    # Calculate finial similarity matrix W.
+    W: Dict[int, Dict[int, float]] = dict()
+    for i, related_items in tqdm(C.items()):
+        for j, cij in related_items.items():
+            if W.get(i):
+                W[i][j] = cij / math.sqrt(N[i] * N[j])
+            else:
+                W[i] = {j: cij / math.sqrt(N[i] * N[j])}
+    return W
+
+
 # %% ItemCF algorithm.
 def recommend_item_cf(user: int,
                       train: Dict[int, Dict[int, int]],
