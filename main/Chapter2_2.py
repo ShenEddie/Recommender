@@ -156,3 +156,17 @@ def inverse_q(Q: Dict[int, Dict[int, float]]
 
 
 Q_inv = inverse_q(Q)
+
+
+# %% Recommendation for LFM.
+def recommend_lfm(user: int,
+                  train: Dict[int, Dict[int, int]],
+                  P: Dict[int, Dict[int, float]],
+                  Q_inv: Dict[int, Dict[int, float]]) -> Dict[int, float]:
+    rank = {}
+    interacted_item = train[user].keys()
+    for f, puf in P[user].items():
+        for i, qfi in Q_inv[f].items():
+            if i not in interacted_item:
+                rank[i] = rank.get(i, 0) + puf * qfi
+    return rank
