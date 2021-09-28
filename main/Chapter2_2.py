@@ -98,3 +98,12 @@ def init_model(user_items: Dict[int, Dict[int, int]],
     return [P, Q]
 
 
+def predict_user_item(user: int,
+                      item: int,
+                      P: Dict[int, Dict[int, float]],
+                      Q: Dict[int, Dict[int, float]],
+                      F: int) -> float:
+    rui = 0
+    for f in range(F):
+        rui += P[user][f] * Q[item][f]
+    return rui
