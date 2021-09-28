@@ -72,3 +72,29 @@ def random_select_negative_sample(items: Dict[int, int],
             if n >= len(items):  # To make sure positive & negative samples are close.
                 break
     return ret
+
+
+# %% Init matrix P & Q.
+def init_model(user_items: Dict[int, Dict[int, int]],
+               F: int) -> List[Dict[int, Dict[int, float]]]:
+    P = dict()
+    Q = dict()
+    all_items = set()
+    for u, items in user_items.items():
+        for item in items.keys():
+            all_items.add(item)
+        for f in range(F):
+            if P.get(u):
+                P[u][f] = random.random() / math.sqrt(F)
+            else:
+                P[u] = {f: random.random() / math.sqrt(F)}
+
+    for i in all_items:
+        for f in range(F):
+            if Q.get(i):
+                Q[i][f] = random.random() / math.sqrt(F)
+            else:
+                Q[i] = {f: random.random() / math.sqrt(F)}
+    return [P, Q]
+
+
