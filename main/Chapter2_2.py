@@ -33,6 +33,28 @@ data = load_m1_1m()
 items_pool = items_pool(data)
 
 
+# %% Load & Split data.
+def split_data(data: List[List[int]], M: int, k: int, seed: int = 1234):
+    test = []
+    train = []
+    random.seed(seed)
+    for user, item, rating in data:
+        if random.randint(0, M) == k:
+            test.append([user, item, rating])
+        else:
+            train.append([user, item, rating])
+    return train, test
+
+
+data = load_m1_1m()
+train_list, test_list = split_data(data, 8, 1)
+train_dict = transfer_list2dict(train_list)
+test_dict = transfer_list2dict(test_list)
+
+del train_list, test_list, data
+gc.collect()
+
+
 # %% Select negative sample:
 def random_select_negative_sample(items: Dict[int, int],
                                   items_pool: List[int]) -> Dict[int, int]:
