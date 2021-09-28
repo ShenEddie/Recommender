@@ -25,12 +25,8 @@ except ModuleNotFoundError:
 
 
 # %% Get items' pool
-def items_pool(data: List[List[int]]) -> List[int]:
+def get_items_pool(data: List[List[int]]) -> List[int]:
     return [line[1] for line in data].copy()
-
-
-data = load_m1_1m()
-items_pool = items_pool(data)
 
 
 # %% Load & Split data.
@@ -46,8 +42,16 @@ def split_data(data: List[List[int]], M: int, k: int, seed: int = 1234):
     return train, test
 
 
-data = load_m1_1m()
+# data = load_m1_1m()
+data = [('a', 101, 1), ('a', 111, 1), ('a', 141, 0),
+        ('b', 111, 0), ('b', 151, 1), ('b', 131, 0),
+        ('c', 121, 1), ('c', 161, 0), ('c', 141, 0),
+        ('d', 111, 1), ('d', 161, 1), ('d', 141, 0), ('d', 121, 0),
+        ('e', 131, 1), ('e', 151, 0), ('e', 171, 0),
+        ('f', 181, 0), ('f', 191, 1),
+        ('g', 101, 1), ('g', 201, 0)]
 train_list, test_list = split_data(data, 8, 1)
+items_pool = get_items_pool(train_list)
 train_dict = transfer_list2dict(train_list)
 test_dict = transfer_list2dict(test_list)
 
@@ -98,6 +102,7 @@ def init_model(user_items: Dict[int, Dict[int, int]],
     return [P, Q]
 
 
+# %% Prediction for user-item.
 def predict_user_item(user: int,
                       item: int,
                       P: Dict[int, Dict[int, float]],
@@ -107,3 +112,31 @@ def predict_user_item(user: int,
     for f in range(F):
         rui += P[user][f] * Q[item][f]
     return rui
+
+
+# %% Latent factor model.
+def latent_factor_model(user_items: Dict[int, Dict[int, int]],
+                        F: int,
+                        n_steps: int,
+                        alpha: float,
+                        lamb: float,
+                        items_pool: List[int]) -> List[Dict[int, Dict[int, float]]]:
+    [P, Q] = init_model(user_items, F)
+    for step in tqdm(range(0, n_steps)):
+        for user, items in user_items.items():
+            samples = random_select_negative_sample(items, items_pool)
+            for item, rui in samples.items():
+                eui = rui - predict_user_item(user, item, P, Q, F)
+                for f in range(F):
+                    P[user][f] += alpha * (eui * Q[item][f] - lamb * P[user][f])
+                    Q[item][f] += alpha * (eui * P[user][f] - lamb * Q[item][f])
+        alpha *= 0.9  # Decay learning rate.
+    return [P, Q]
+
+
+P, Q = latent_factor_model(user_items=train_dict,
+                           F=100,
+                           n_steps=100,
+                           alpha=0.02,
+                           lamb=0.01,
+                           items_pool=items_pool)
