@@ -140,3 +140,19 @@ P, Q = latent_factor_model(user_items=train_dict,
                            alpha=0.02,
                            lamb=0.01,
                            items_pool=items_pool)
+
+
+# %% Create inverse table for Q.
+def inverse_q(Q: Dict[int, Dict[int, float]]
+              ) -> Dict[int, Dict[int, float]]:
+    Q_inv = dict()
+    for i, f_qfi in Q.items():
+        for f, qfi in f_qfi.items():
+            if Q_inv.get(f):
+                Q_inv[f][i] = qfi
+            else:
+                Q_inv[f] = {i: qfi}
+    return Q_inv
+
+
+Q_inv = inverse_q(Q)
