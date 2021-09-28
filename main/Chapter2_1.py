@@ -120,6 +120,38 @@ def item_similarity_iuf(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int,
 W_iuf = item_similarity_iuf(train_dict)
 
 
+# %% Item Similarity: increase the penalty for hot items.
+def item_similarity_penalty(train: Dict[int, Dict[int, int]],
+                            alpha: float) -> Dict[int, Dict[int, Union[int, float]]]:
+    # Calculate co-rated users between items.
+    C: Dict[int, Dict[int, int]] = dict()
+    N: Dict[int, int] = dict()
+    for u, items in tqdm(train.items()):
+        for i in items.keys():
+            N[i] = N.get(i, 0) + 1
+            for j in items.keys():
+                if i == j:
+                    continue
+                else:
+                    if C.get(i):
+                        C[i][j] = C[i].get(j, 0) + 1
+                    else:
+                        C[i] = {j: 1}
+
+    # Calculate finial similarity matrix W.
+    W: Dict[int, Dict[int, float]] = dict()
+    for i, related_items in tqdm(C.items()):
+        for j, cij in related_items.items():
+            if W.get(i):
+                W[i][j] = cij / math.sqrt((N[i] ** (1 - alpha)) * (N[j] ** alpha))
+            else:
+                W[i] = {j: cij / math.sqrt((N[i] ** (1 - alpha)) * (N[j] ** alpha))}
+    return W
+
+
+W_penalty = item_similarity_penalty(train_dict, 0.55)
+
+
 # %% Normalize similarity matrix.
 def similarity_norm(W: Dict[int, Dict[int, Union[int, float]]]
                     ) -> Dict[int, Dict[int, float]]:
@@ -131,7 +163,7 @@ def similarity_norm(W: Dict[int, Dict[int, Union[int, float]]]
     return W_normed
 
 
-W_normed = similarity_norm(W_iuf)
+W_normed = similarity_norm(W)
 
 
 # %% ItemCF algorithm.
