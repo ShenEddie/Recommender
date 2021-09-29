@@ -9,10 +9,12 @@
 
 
 # %% Import packages.
+import os
 import sys
 import gc
 import math
 import random
+import pickle
 from typing import List, Dict
 from operator import itemgetter
 from tqdm import tqdm
@@ -20,6 +22,7 @@ from tqdm import tqdm
 sys.path.append('../')
 try:
     from utils.load_data import load_m1_1m, transfer_list2dict
+    from config.file_path import lfm_params_path
 except ModuleNotFoundError:
     raise
 
@@ -134,12 +137,18 @@ def latent_factor_model(user_items: Dict[int, Dict[int, int]],
     return [P, Q]
 
 
-P, Q = latent_factor_model(user_items=train_dict,
-                           F=100,
-                           n_steps=100,
-                           alpha=0.02,
-                           lamb=0.01,
-                           items_pool=items_pool)
+if os.path.isfile(lfm_params_path):
+    with open(lfm_params_path, 'rb') as f:
+        P, Q = pickle.load(f)
+else:
+    P, Q = latent_factor_model(user_items=train_dict,
+                               F=100,
+                               n_steps=100,
+                               alpha=0.02,
+                               lamb=0.01,
+                               items_pool=items_pool)
+    with open(lfm_params_path, 'wb') as f:
+        pickle.dump([P, Q], f)
 
 
 # %% Create inverse table for Q.
