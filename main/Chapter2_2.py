@@ -236,3 +236,28 @@ def coverage_lfm(train: Dict[int, Dict[int, int]],
 
 
 print(coverage_lfm(train_dict, test_dict, P, Q_inv, 10))
+
+
+# %% Popularity.
+def popularity_lfm(train: Dict[int, Dict[int, int]],
+                   test: Dict[int, Dict[int, int]],
+                   P: Dict[int, Dict[int, float]],
+                   Q_inv: Dict[int, Dict[int, float]],
+                   n: int):
+    item_popularity = {}
+    for user, items in train.items():
+        for item in items.keys():
+            item_popularity[item] = item_popularity.get(item, 0) + 1
+    ret = 0
+    num = 0
+    for user in tqdm(train.keys()):
+        rank = recommend_lfm(user, train, P, Q_inv)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
+        for item, pui in rank:
+            ret += math.log(1 + item_popularity[item])
+            num += 1
+    ret /= num
+    return ret
+
+
+print(popularity_lfm(train_dict, test_dict, P, Q_inv, 10))
