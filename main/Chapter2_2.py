@@ -192,3 +192,25 @@ def recall_lfm(train: Dict[int, Dict[int, int]],
 
 
 print(recall_lfm(train_dict, test_dict, P, Q_inv, 10))
+
+
+# %% Precision
+def precision_lfm(train: Dict[int, Dict[int, int]],
+                  test: Dict[int, Dict[int, int]],
+                  P: Dict[int, Dict[int, float]],
+                  Q_inv: Dict[int, Dict[int, float]],
+                  n: int) -> float:
+    hit = 0
+    all = 0
+    for user in tqdm(train.keys()):
+        tu = test.get(user, {})
+        rank = recommend_lfm(user, train, P, Q_inv)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
+        for item, pui in rank:
+            if item in tu:
+                hit += 1
+        all += len(rank)
+    return hit / all
+
+
+print(precision_lfm(train_dict, test_dict, P, Q_inv, 10))
