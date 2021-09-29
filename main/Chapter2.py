@@ -36,15 +36,6 @@ def split_data(data: List[List[int]], M: int, k: int, seed: int = 1234):
     return train, test
 
 
-data = load_m1_1m()
-train_list, test_list = split_data(data, 8, 1)
-train_dict = transfer_list2dict(train_list)
-test_dict = transfer_list2dict(test_list)
-
-del train_list, test_list, data
-gc.collect()
-
-
 # %% User similarity.
 def user_similarity(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, float]]:
     # Build inverse table for item_users.
@@ -80,17 +71,6 @@ def user_similarity(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, flo
             else:
                 W[u] = {v: cuv / math.sqrt(N[u] * N[v])}
     return W
-
-
-# train_sample = {
-#     1: {1: 1, 2: 1, 4: 1},
-#     2: {1: 1, 3: 1},
-#     3: {2: 1, 5: 1},
-#     4: {3: 1, 4: 1, 5: 1}
-# }
-#
-# W_sample = user_similarity(train_sample)
-W = user_similarity(train_dict)
 
 
 # %% User similarity iif.
@@ -130,9 +110,6 @@ def user_similarity_iif(train):
     return W
 
 
-W_iif = user_similarity_iif(train_dict)
-
-
 # %% UserCF algorithm.
 def recommend_user_cf(user: int,
                       train: Dict[int, Dict[int, int]],
@@ -145,9 +122,6 @@ def recommend_user_cf(user: int,
             if i not in interacted_item:
                 rank[i] = rank.get(i, 0) + wuv * rvi
     return rank
-
-
-# rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
 
 
 # %% Recall.
@@ -169,10 +143,6 @@ def recall_user_cf(train: Dict[int, Dict[int, int]],
     return hit / all
 
 
-print(recall_user_cf(train_dict, test_dict, W, 80, 10))
-print(recall_user_cf(train_dict, test_dict, W_iif, 80, 10))
-
-
 # %% Precision
 def precision_user_cf(train: Dict[int, Dict[int, int]],
                       test: Dict[int, Dict[int, int]],
@@ -192,10 +162,6 @@ def precision_user_cf(train: Dict[int, Dict[int, int]],
     return hit / all
 
 
-print(precision_user_cf(train_dict, test_dict, W, 80, 10))
-print(precision_user_cf(train_dict, test_dict, W_iif, 80, 10))
-
-
 # %% Coverage.
 def coverage_user_cf(train: Dict[int, Dict[int, int]],
                      test: Dict[int, Dict[int, int]],
@@ -213,10 +179,6 @@ def coverage_user_cf(train: Dict[int, Dict[int, int]],
             recommend_items.add(item)
     coverage_rate = len(recommend_items) / len(all_items)
     return coverage_rate
-
-
-print(coverage_user_cf(train_dict, test_dict, W, 80, 10))
-print(coverage_user_cf(train_dict, test_dict, W_iif, 80, 10))
 
 
 # %% Popularity.
@@ -241,5 +203,32 @@ def popularity_user_cf(train: Dict[int, Dict[int, int]],
     return ret
 
 
-print(popularity_user_cf(train_dict, test_dict, W, 80, 10))
-print(popularity_user_cf(train_dict, test_dict, W_iif, 80, 10))
+if __name__ == '__main__':
+    data = load_m1_1m()
+    train_list, test_list = split_data(data, 8, 1)
+    train_dict = transfer_list2dict(train_list)
+    test_dict = transfer_list2dict(test_list)
+
+    del train_list, test_list, data
+    gc.collect()
+
+    # train_sample = {
+    #     1: {1: 1, 2: 1, 4: 1},
+    #     2: {1: 1, 3: 1},
+    #     3: {2: 1, 5: 1},
+    #     4: {3: 1, 4: 1, 5: 1}
+    # }
+    #
+    # W_sample = user_similarity(train_sample)
+    W = user_similarity(train_dict)
+    W_iif = user_similarity_iif(train_dict)
+    # rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
+
+    print(recall_user_cf(train_dict, test_dict, W, 80, 10))
+    print(recall_user_cf(train_dict, test_dict, W_iif, 80, 10))
+    print(precision_user_cf(train_dict, test_dict, W, 80, 10))
+    print(precision_user_cf(train_dict, test_dict, W_iif, 80, 10))
+    print(coverage_user_cf(train_dict, test_dict, W, 80, 10))
+    print(coverage_user_cf(train_dict, test_dict, W_iif, 80, 10))
+    print(popularity_user_cf(train_dict, test_dict, W, 80, 10))
+    print(popularity_user_cf(train_dict, test_dict, W_iif, 80, 10))
