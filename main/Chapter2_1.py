@@ -39,15 +39,6 @@ def split_data(data: List[List[int]], M: int, k: int, seed: int = 1234):
     return train, test
 
 
-data = load_m1_1m()
-train_list, test_list = split_data(data, 8, 1)
-train_dict = transfer_list2dict(train_list)
-test_dict = transfer_list2dict(test_list)
-
-del train_list, test_list, data
-gc.collect()
-
-
 # %% Item Similarity.
 def item_similarity(train: Dict[int, Dict[int, int]]):
     # Calculate co-rated users between items.
@@ -75,17 +66,6 @@ def item_similarity(train: Dict[int, Dict[int, int]]):
             else:
                 W[i] = {j: cij / math.sqrt(N[i] * N[j])}
     return W
-
-
-# train_sample = {
-#     1: {1: 1, 2: 1, 4: 1},
-#     2: {2: 1, 3: 1, 5: 1},
-#     3: {3: 1, 4: 1},
-#     4: {2: 1, 3: 1, 4: 1},
-#     5: {1: 1, 4: 1}
-# }
-# W_sample = item_similarity(train_sample)
-W = item_similarity(train_dict)
 
 
 # %% Item similarity iuf.
@@ -117,9 +97,6 @@ def item_similarity_iuf(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int,
     return W
 
 
-W_iuf = item_similarity_iuf(train_dict)
-
-
 # %% Item Similarity: increase the penalty for hot items.
 def item_similarity_penalty(train: Dict[int, Dict[int, int]],
                             alpha: float) -> Dict[int, Dict[int, Union[int, float]]]:
@@ -149,9 +126,6 @@ def item_similarity_penalty(train: Dict[int, Dict[int, int]],
     return W
 
 
-W_penalty = item_similarity_penalty(train_dict, 0.55)
-
-
 # %% Normalize similarity matrix.
 def similarity_norm(W: Dict[int, Dict[int, Union[int, float]]]
                     ) -> Dict[int, Dict[int, float]]:
@@ -161,9 +135,6 @@ def similarity_norm(W: Dict[int, Dict[int, Union[int, float]]]
         for j, wij in wi.items():
             W_normed[i][j] = wij / max_wij
     return W_normed
-
-
-W_normed = similarity_norm(W)
 
 
 # %% ItemCF algorithm.
@@ -201,10 +172,6 @@ def recall_item_cf(train: Dict[int, Dict[int, int]],
     return hit / all
 
 
-print(recall_item_cf(train_dict, test_dict, W, 10, 10))
-print(recall_item_cf(train_dict, test_dict, W_iuf, 10, 10))
-
-
 # %% Precision
 def precision_item_cf(train: Dict[int, Dict[int, int]],
                       test: Dict[int, Dict[int, int]],
@@ -224,10 +191,6 @@ def precision_item_cf(train: Dict[int, Dict[int, int]],
     return hit / all
 
 
-print(precision_item_cf(train_dict, test_dict, W, 10, 10))
-print(precision_item_cf(train_dict, test_dict, W_iuf, 10, 10))
-
-
 # %% Coverage.
 def coverage_item_cf(train: Dict[int, Dict[int, int]],
                      test: Dict[int, Dict[int, int]],
@@ -245,10 +208,6 @@ def coverage_item_cf(train: Dict[int, Dict[int, int]],
             recommend_items.add(item)
     coverage_rate = len(recommend_items) / len(all_items)
     return coverage_rate
-
-
-print(coverage_item_cf(train_dict, test_dict, W, 10, 10))
-print(coverage_item_cf(train_dict, test_dict, W_iuf, 10, 10))
 
 
 # %% Popularity.
@@ -273,6 +232,34 @@ def popularity_item_cf(train: Dict[int, Dict[int, int]],
     return ret
 
 
-print(popularity_item_cf(train_dict, test_dict, W, 10, 10))
-print(popularity_item_cf(train_dict, test_dict, W_iuf, 10, 10))
-print(popularity_item_cf(train_dict, test_dict, W_normed, 10, 10))
+if __name__ == '__main__':
+    data = load_m1_1m()
+    train_list, test_list = split_data(data, 8, 1)
+    train_dict = transfer_list2dict(train_list)
+    test_dict = transfer_list2dict(test_list)
+
+    del train_list, test_list, data
+    gc.collect()
+
+    # train_sample = {
+    #     1: {1: 1, 2: 1, 4: 1},
+    #     2: {2: 1, 3: 1, 5: 1},
+    #     3: {3: 1, 4: 1},
+    #     4: {2: 1, 3: 1, 4: 1},
+    #     5: {1: 1, 4: 1}
+    # }
+    # W_sample = item_similarity(train_sample)
+    W = item_similarity(train_dict)
+    W_iuf = item_similarity_iuf(train_dict)
+    W_penalty = item_similarity_penalty(train_dict, 0.55)
+    W_normed = similarity_norm(W)
+
+    print(recall_item_cf(train_dict, test_dict, W, 10, 10))
+    print(recall_item_cf(train_dict, test_dict, W_iuf, 10, 10))
+    print(precision_item_cf(train_dict, test_dict, W, 10, 10))
+    print(precision_item_cf(train_dict, test_dict, W_iuf, 10, 10))
+    print(coverage_item_cf(train_dict, test_dict, W, 10, 10))
+    print(coverage_item_cf(train_dict, test_dict, W_iuf, 10, 10))
+    print(popularity_item_cf(train_dict, test_dict, W, 10, 10))
+    print(popularity_item_cf(train_dict, test_dict, W_iuf, 10, 10))
+    print(popularity_item_cf(train_dict, test_dict, W_normed, 10, 10))
