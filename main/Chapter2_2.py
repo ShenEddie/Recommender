@@ -214,3 +214,25 @@ def precision_lfm(train: Dict[int, Dict[int, int]],
 
 
 print(precision_lfm(train_dict, test_dict, P, Q_inv, 10))
+
+
+# %% Coverage.
+def coverage_lfm(train: Dict[int, Dict[int, int]],
+                 test: Dict[int, Dict[int, int]],
+                 P: Dict[int, Dict[int, float]],
+                 Q_inv: Dict[int, Dict[int, float]],
+                 n: int) -> float:
+    recommend_items = set()
+    all_items = set()
+    for user in tqdm(train.keys()):
+        for item in train[user].keys():
+            all_items.add(item)
+        rank = recommend_lfm(user, train, P, Q_inv)
+        rank = sorted(rank.items(), key=itemgetter(1), reverse=True)[0:n]
+        for item, pui in rank:
+            recommend_items.add(item)
+    coverage_rate = len(recommend_items) / len(all_items)
+    return coverage_rate
+
+
+print(coverage_lfm(train_dict, test_dict, P, Q_inv, 10))
