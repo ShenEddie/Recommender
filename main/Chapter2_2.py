@@ -45,23 +45,6 @@ def split_data(data: List[List[int]], M: int, k: int, seed: int = 1234):
     return train, test
 
 
-# data = load_m1_1m()
-data = [('a', 101, 1), ('a', 111, 1), ('a', 141, 0),
-        ('b', 111, 0), ('b', 151, 1), ('b', 131, 0),
-        ('c', 121, 1), ('c', 161, 0), ('c', 141, 0),
-        ('d', 111, 1), ('d', 161, 1), ('d', 141, 0), ('d', 121, 0),
-        ('e', 131, 1), ('e', 151, 0), ('e', 171, 0),
-        ('f', 181, 0), ('f', 191, 1),
-        ('g', 101, 1), ('g', 201, 0)]
-train_list, test_list = split_data(data, 8, 1)
-items_pool = get_items_pool(train_list)
-train_dict = transfer_list2dict(train_list)
-test_dict = transfer_list2dict(test_list)
-
-del train_list, test_list, data
-gc.collect()
-
-
 # %% Select negative sample:
 def random_select_negative_sample(items: Dict[int, int],
                                   items_pool: List[int]) -> Dict[int, int]:
@@ -137,20 +120,6 @@ def latent_factor_model(user_items: Dict[int, Dict[int, int]],
     return [P, Q]
 
 
-if os.path.isfile(lfm_params_path):
-    with open(lfm_params_path, 'rb') as f:
-        P, Q = pickle.load(f)
-else:
-    P, Q = latent_factor_model(user_items=train_dict,
-                               F=100,
-                               n_steps=100,
-                               alpha=0.02,
-                               lamb=0.01,
-                               items_pool=items_pool)
-    with open(lfm_params_path, 'wb') as f:
-        pickle.dump([P, Q], f)
-
-
 # %% Create inverse table for Q.
 def inverse_q(Q: Dict[int, Dict[int, float]]
               ) -> Dict[int, Dict[int, float]]:
@@ -162,9 +131,6 @@ def inverse_q(Q: Dict[int, Dict[int, float]]
             else:
                 Q_inv[f] = {i: qfi}
     return Q_inv
-
-
-Q_inv = inverse_q(Q)
 
 
 # %% Recommendation for LFM.
@@ -200,9 +166,6 @@ def recall_lfm(train: Dict[int, Dict[int, int]],
     return hit / all
 
 
-print(recall_lfm(train_dict, test_dict, P, Q_inv, 10))
-
-
 # %% Precision
 def precision_lfm(train: Dict[int, Dict[int, int]],
                   test: Dict[int, Dict[int, int]],
@@ -222,9 +185,6 @@ def precision_lfm(train: Dict[int, Dict[int, int]],
     return hit / all
 
 
-print(precision_lfm(train_dict, test_dict, P, Q_inv, 10))
-
-
 # %% Coverage.
 def coverage_lfm(train: Dict[int, Dict[int, int]],
                  test: Dict[int, Dict[int, int]],
@@ -242,9 +202,6 @@ def coverage_lfm(train: Dict[int, Dict[int, int]],
             recommend_items.add(item)
     coverage_rate = len(recommend_items) / len(all_items)
     return coverage_rate
-
-
-print(coverage_lfm(train_dict, test_dict, P, Q_inv, 10))
 
 
 # %% Popularity.
@@ -269,4 +226,39 @@ def popularity_lfm(train: Dict[int, Dict[int, int]],
     return ret
 
 
-print(popularity_lfm(train_dict, test_dict, P, Q_inv, 10))
+if __name__ == '__main__':
+    data = load_m1_1m()
+    # data = [('a', 101, 1), ('a', 111, 1), ('a', 141, 0),
+    #         ('b', 111, 0), ('b', 151, 1), ('b', 131, 0),
+    #         ('c', 121, 1), ('c', 161, 0), ('c', 141, 0),
+    #         ('d', 111, 1), ('d', 161, 1), ('d', 141, 0), ('d', 121, 0),
+    #         ('e', 131, 1), ('e', 151, 0), ('e', 171, 0),
+    #         ('f', 181, 0), ('f', 191, 1),
+    #         ('g', 101, 1), ('g', 201, 0)]
+    train_list, test_list = split_data(data, 8, 1)
+    items_pool = get_items_pool(train_list)
+    train_dict = transfer_list2dict(train_list)
+    test_dict = transfer_list2dict(test_list)
+
+    del train_list, test_list, data
+    gc.collect()
+
+    if os.path.isfile(lfm_params_path):
+        with open(lfm_params_path, 'rb') as f:
+            P, Q = pickle.load(f)
+    else:
+        P, Q = latent_factor_model(user_items=train_dict,
+                                   F=100,
+                                   n_steps=100,
+                                   alpha=0.02,
+                                   lamb=0.01,
+                                   items_pool=items_pool)
+        with open(lfm_params_path, 'wb') as f:
+            pickle.dump([P, Q], f)
+
+    Q_inv = inverse_q(Q)
+
+    print(recall_lfm(train_dict, test_dict, P, Q_inv, 10))
+    print(precision_lfm(train_dict, test_dict, P, Q_inv, 10))
+    print(coverage_lfm(train_dict, test_dict, P, Q_inv, 10))
+    print(popularity_lfm(train_dict, test_dict, P, Q_inv, 10))
