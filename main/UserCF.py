@@ -209,6 +209,7 @@ def popularity_user_cf(train: Dict[int, Dict[int, int]],
 
 
 if __name__ == '__main__':
+    # Load and split data.
     data = load_m1_1m()
     train_list, test_list = split_data(data, 8, 1)
     train_dict = transfer_list2dict(train_list)
@@ -217,28 +218,14 @@ if __name__ == '__main__':
     del train_list, test_list, data
     gc.collect()
 
-    # train_sample = {
-    #     1: {1: 1, 2: 1, 4: 1},
-    #     2: {1: 1, 3: 1},
-    #     3: {2: 1, 5: 1},
-    #     4: {3: 1, 4: 1, 5: 1}
-    # }
-    #
-    # W_sample = user_similarity(train_sample)
+    # Calculate weight matrix W.
     if os.path.isfile(user_cf_W_path):
         W = pickle.load(open(user_cf_W_path, 'rb'))
     else:
         W = user_similarity(train_dict)
         pickle.dump(W, open(user_cf_W_path, 'wb'))
 
-    if os.path.isfile(user_cf_W_iif_path):
-        W_iif = pickle.load(open(user_cf_W_iif_path, 'rb'))
-    else:
-        W_iif = user_similarity(train_dict)
-        pickle.dump(W, open(user_cf_W_iif_path, 'wb'))
-
-    # rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
-
+    # Test UserCF.
     res = {
         'K': [],
         'recall': [],
@@ -259,3 +246,24 @@ if __name__ == '__main__':
         res['popularity'].append(popularity)
         print("K:{}, recall:{}, precision:{}, coverage:{}, popularity:{}"
               "".format(K, recall, precision, coverage, popularity))
+
+    del W
+    gc.collect()
+
+    # Calculate weight matrix W_iif.
+    if os.path.isfile(user_cf_W_iif_path):
+        W_iif = pickle.load(open(user_cf_W_iif_path, 'rb'))
+    else:
+        W_iif = user_similarity_iif(train_dict)
+        pickle.dump(W_iif, open(user_cf_W_iif_path, 'wb'))
+
+    # Test UserIIF.
+    K = 40
+    recall = recall_user_cf(train_dict, test_dict, W_iif, K, N)
+    precision = precision_user_cf(train_dict, test_dict, W_iif, K, N)
+    coverage = coverage_user_cf(train_dict, test_dict, W_iif, K, N)
+    popularity = popularity_user_cf(train_dict, test_dict, W_iif, K, N)
+    print("User_iif: recall:{}, precision:{}, coverage:{}, popularity:{}"
+          "".format(recall, precision, coverage, popularity))
+    res_iif = [recall, precision, coverage, popularity]
+    print(res_iif)
