@@ -226,11 +226,23 @@ if __name__ == '__main__':
     W_iif = user_similarity_iif(train_dict)
     # rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
 
-    print(recall_user_cf(train_dict, test_dict, W, 80, 10))
-    print(recall_user_cf(train_dict, test_dict, W_iif, 80, 10))
-    print(precision_user_cf(train_dict, test_dict, W, 80, 10))
-    print(precision_user_cf(train_dict, test_dict, W_iif, 80, 10))
-    print(coverage_user_cf(train_dict, test_dict, W, 80, 10))
-    print(coverage_user_cf(train_dict, test_dict, W_iif, 80, 10))
-    print(popularity_user_cf(train_dict, test_dict, W, 80, 10))
-    print(popularity_user_cf(train_dict, test_dict, W_iif, 80, 10))
+    res = {
+        'K': [],
+        'recall': [],
+        'precision': [],
+        'coverage': [],
+        'popularity': []
+    }
+    N = 10  # Top-N recommendation.
+    for K in [5, 10, 20, 40, 80, 100]:
+        res['K'].append(K)
+        recall = recall_user_cf(train_dict, test_dict, W, K, N)
+        res['recall'].append(recall)
+        precision = precision_user_cf(train_dict, test_dict, W, K, N)
+        res['precision'].append(precision)
+        coverage = coverage_user_cf(train_dict, test_dict, W, K, N)
+        res['coverage'].append(coverage)
+        popularity = popularity_user_cf(train_dict, test_dict, W, K, N)
+        res['popularity'].append(popularity)
+        print("K:{}, recall:{}, precision:{}, coverage:{}, popularity:{}"
+              "".format(K, recall, precision, coverage, popularity))
