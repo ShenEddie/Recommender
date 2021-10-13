@@ -8,10 +8,12 @@
 # @Software: PyCharm
 
 # %% Import packages.
+import os
 import sys
 import gc
 import math
 import random
+import pickle
 from typing import List, Dict
 from operator import itemgetter
 from tqdm import tqdm
@@ -19,6 +21,7 @@ from tqdm import tqdm
 sys.path.append('../')
 try:
     from utils.load_data import load_m1_1m, transfer_list2dict
+    from config.file_path import user_cf_W_path, user_cf_W_iif_path
 except ModuleNotFoundError:
     raise
 
@@ -222,8 +225,18 @@ if __name__ == '__main__':
     # }
     #
     # W_sample = user_similarity(train_sample)
-    W = user_similarity(train_dict)
-    W_iif = user_similarity_iif(train_dict)
+    if os.path.isfile(user_cf_W_path):
+        W = pickle.load(open(user_cf_W_path, 'rb'))
+    else:
+        W = user_similarity(train_dict)
+        pickle.dump(W, open(user_cf_W_path, 'wb'))
+
+    if os.path.isfile(user_cf_W_iif_path):
+        W_iif = pickle.load(open(user_cf_W_iif_path, 'rb'))
+    else:
+        W_iif = user_similarity(train_dict)
+        pickle.dump(W, open(user_cf_W_iif_path, 'wb'))
+
     # rank_sample = recommend_user_cf(1, train_sample, W_sample, 3)
 
     res = {
