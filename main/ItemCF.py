@@ -4,7 +4,7 @@
 # @Time    : 2021-09-27 09:29
 # @Author  : Eddie Shen
 # @Email   : sheneddie@outlook.com
-# @File    : Chapter2_1.py
+# @File    : ItemCF.py
 # @Software: PyCharm
 
 
@@ -69,7 +69,9 @@ def item_similarity(train: Dict[int, Dict[int, int]]):
 
 
 # %% Item similarity iuf.
-def item_similarity_iuf(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, float]]:
+def item_similarity_iuf(
+        train: Dict[int, Dict[int, int]]
+) -> Dict[int, Dict[int, float]]:
     # Calculate co-rated users between items.
     C: Dict[int, Dict[int, float]] = dict()
     N: Dict[int, int] = dict()
@@ -98,8 +100,10 @@ def item_similarity_iuf(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int,
 
 
 # %% Item Similarity: increase the penalty for hot items.
-def item_similarity_penalty(train: Dict[int, Dict[int, int]],
-                            alpha: float) -> Dict[int, Dict[int, Union[int, float]]]:
+def item_similarity_penalty(
+        train: Dict[int, Dict[int, int]],
+        alpha: float
+) -> Dict[int, Dict[int, Union[int, float]]]:
     # Calculate co-rated users between items.
     C: Dict[int, Dict[int, int]] = dict()
     N: Dict[int, int] = dict()
@@ -120,9 +124,11 @@ def item_similarity_penalty(train: Dict[int, Dict[int, int]],
     for i, related_items in tqdm(C.items()):
         for j, cij in related_items.items():
             if W.get(i):
-                W[i][j] = cij / math.sqrt((N[i] ** (1 - alpha)) * (N[j] ** alpha))
+                W[i][j] = (cij /
+                           math.sqrt((N[i] ** (1 - alpha)) * (N[j] ** alpha)))
             else:
-                W[i] = {j: cij / math.sqrt((N[i] ** (1 - alpha)) * (N[j] ** alpha))}
+                W[i] = {j: (cij /
+                            math.sqrt((N[i] ** (1 - alpha)) * (N[j] ** alpha)))}
     return W
 
 

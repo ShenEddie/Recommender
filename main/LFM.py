@@ -4,7 +4,7 @@
 # @Time    : 2021-09-28 12:06
 # @Author  : Eddie Shen
 # @Email   : sheneddie@outlook.com
-# @File    : Chapter2_2.py
+# @File    : LFM.py
 # @Software: PyCharm
 
 
@@ -59,7 +59,8 @@ def random_select_negative_sample(items: Dict[int, int],
         else:
             ret[item] = 0  # Negative sample.
             n += 1
-            if n >= len(items):  # To make sure positive & negative samples are close.
+            # To make sure positive & negative samples are close.
+            if n >= len(items):
                 break
     return ret
 
@@ -101,12 +102,14 @@ def predict_user_item(user: int,
 
 
 # %% Latent factor model.
-def latent_factor_model(user_items: Dict[int, Dict[int, int]],
-                        F: int,
-                        n_steps: int,
-                        alpha: float,
-                        lamb: float,
-                        items_pool: List[int]) -> List[Dict[int, Dict[int, float]]]:
+def latent_factor_model(
+        user_items: Dict[int, Dict[int, int]],
+        F: int,
+        n_steps: int,
+        alpha: float,
+        lamb: float,
+        items_pool: List[int]
+) -> List[Dict[int, Dict[int, float]]]:
     [P, Q] = init_model(user_items, F)
     for step in tqdm(range(0, n_steps)):
         for user, items in user_items.items():

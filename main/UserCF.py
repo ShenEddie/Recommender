@@ -4,7 +4,7 @@
 # @Time    : 2021-09-24 13:57
 # @Author  : Eddie Shen
 # @Email   : sheneddie@outlook.com
-# @File    : Chapter2.py
+# @File    : UserCF.py
 # @Software: PyCharm
 
 # %% Import packages.
@@ -37,7 +37,9 @@ def split_data(data: List[List[int]], M: int, k: int, seed: int = 1234):
 
 
 # %% User similarity.
-def user_similarity(train: Dict[int, Dict[int, int]]) -> Dict[int, Dict[int, float]]:
+def user_similarity(
+        train: Dict[int, Dict[int, int]]
+) -> Dict[int, Dict[int, float]]:
     # Build inverse table for item_users.
     item_users = dict()
     for user, items in tqdm(train.items()):
