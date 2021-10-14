@@ -9,11 +9,13 @@
 
 
 # %% Import packages.
+import os
 import sys
 import gc
 import math
 import random
 import copy
+import pickle
 from typing import List, Dict, Union
 from operator import itemgetter
 from tqdm import tqdm
@@ -22,6 +24,8 @@ from pprint import pprint
 sys.path.append('../')
 try:
     from utils.load_data import load_m1_1m, transfer_list2dict
+    from config.file_path import item_cf_W_path, item_cf_W_iuf_path
+    from config.file_path import item_cf_W_penalty_path, item_cf_W_normed_path
 except ModuleNotFoundError:
     raise
 
@@ -247,25 +251,57 @@ if __name__ == '__main__':
     del train_list, test_list, data
     gc.collect()
 
-    # train_sample = {
-    #     1: {1: 1, 2: 1, 4: 1},
-    #     2: {2: 1, 3: 1, 5: 1},
-    #     3: {3: 1, 4: 1},
-    #     4: {2: 1, 3: 1, 4: 1},
-    #     5: {1: 1, 4: 1}
-    # }
-    # W_sample = item_similarity(train_sample)
-    W = item_similarity(train_dict)
-    W_iuf = item_similarity_iuf(train_dict)
-    W_penalty = item_similarity_penalty(train_dict, 0.55)
-    W_normed = similarity_norm(W)
+    # Calculate weight matrix W.
+    if os.path.isfile(item_cf_W_path):
+        W = pickle.load(open(item_cf_W_path, 'rb'))
+    else:
+        W = item_similarity(train_dict)
+        pickle.dump(W, open(item_cf_W_path, 'wb'))
 
-    print(recall_item_cf(train_dict, test_dict, W, 10, 10))
-    print(recall_item_cf(train_dict, test_dict, W_iuf, 10, 10))
-    print(precision_item_cf(train_dict, test_dict, W, 10, 10))
-    print(precision_item_cf(train_dict, test_dict, W_iuf, 10, 10))
-    print(coverage_item_cf(train_dict, test_dict, W, 10, 10))
-    print(coverage_item_cf(train_dict, test_dict, W_iuf, 10, 10))
-    print(popularity_item_cf(train_dict, test_dict, W, 10, 10))
-    print(popularity_item_cf(train_dict, test_dict, W_iuf, 10, 10))
-    print(popularity_item_cf(train_dict, test_dict, W_normed, 10, 10))
+    # Test ItemCF.
+    res = {
+        'K': [],
+        'recall': [],
+        'precision': [],
+        'coverage': [],
+        'popularity': []
+    }
+    N = 10  # Top-N recommendation.
+    for K in [5, 10, 20, 40, 80, 100]:
+        res['K'].append(K)
+        recall = recall_item_cf(train_dict, test_dict, W, K, N)
+        res['recall'].append(recall)
+        precision = precision_item_cf(train_dict, test_dict, W, K, N)
+        res['precision'].append(precision)
+        coverage = coverage_item_cf(train_dict, test_dict, W, K, N)
+        res['coverage'].append(coverage)
+        popularity = popularity_item_cf(train_dict, test_dict, W, K, N)
+        res['popularity'].append(popularity)
+        print("K:{}, recall:{}, precision:{}, coverage:{}, popularity:{}"
+              "".format(K, recall, precision, coverage, popularity))
+    print(res)
+
+    del W
+    gc.collect()
+
+    # Calculate weight matrix W_iuf.
+    if os.path.isfile(item_cf_W_iuf_path):
+        W_iuf = pickle.load(open(item_cf_W_iuf_path, 'rb'))
+    else:
+        W_iuf = item_similarity_iuf(train_dict)
+        pickle.dump(W_iuf, open(item_cf_W_iuf_path, 'wb'))
+
+    # Calculate weight matrix W_penalty.
+    if os.path.isfile(item_cf_W_penalty_path):
+        W_penalty = pickle.load(open(item_cf_W_penalty_path, 'rb'))
+    else:
+        W_penalty = item_similarity_penalty(train_dict, 0.55)
+        pickle.dump(W_penalty, open(item_cf_W_penalty_path, 'wb'))
+
+    # Calculate weight matrix W_normed.
+    if os.path.isfile(item_cf_W_normed_path):
+        W_normed = pickle.load(open(item_cf_W_normed_path, 'rb'))
+    else:
+        W = pickle.load(open(item_cf_W_path, 'rb'))
+        W_normed = similarity_norm(W)
+        pickle.dump(W_normed, open(item_cf_W_normed_path, 'wb'))
