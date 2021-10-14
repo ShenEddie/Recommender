@@ -231,13 +231,6 @@ def popularity_lfm(train: Dict[int, Dict[int, int]],
 
 if __name__ == '__main__':
     data = load_m1_1m()
-    # data = [('a', 101, 1), ('a', 111, 1), ('a', 141, 0),
-    #         ('b', 111, 0), ('b', 151, 1), ('b', 131, 0),
-    #         ('c', 121, 1), ('c', 161, 0), ('c', 141, 0),
-    #         ('d', 111, 1), ('d', 161, 1), ('d', 141, 0), ('d', 121, 0),
-    #         ('e', 131, 1), ('e', 151, 0), ('e', 171, 0),
-    #         ('f', 181, 0), ('f', 191, 1),
-    #         ('g', 101, 1), ('g', 201, 0)]
     train_list, test_list = split_data(data, 8, 1)
     items_pool = get_items_pool(train_list)
     train_dict = transfer_list2dict(train_list)
@@ -247,8 +240,7 @@ if __name__ == '__main__':
     gc.collect()
 
     if os.path.isfile(lfm_params_path):
-        with open(lfm_params_path, 'rb') as f:
-            P, Q = pickle.load(f)
+        P, Q = pickle.load(open(lfm_params_path, 'rb'))
     else:
         P, Q = latent_factor_model(user_items=train_dict,
                                    F=100,
@@ -256,8 +248,7 @@ if __name__ == '__main__':
                                    alpha=0.02,
                                    lamb=0.01,
                                    items_pool=items_pool)
-        with open(lfm_params_path, 'wb') as f:
-            pickle.dump([P, Q], f)
+        pickle.dump([P, Q], open(lfm_params_path, 'wb'))
 
     Q_inv = inverse_q(Q)
 
