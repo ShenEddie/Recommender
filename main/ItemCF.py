@@ -128,11 +128,9 @@ def item_similarity_penalty(
     for i, related_items in tqdm(C.items()):
         for j, cij in related_items.items():
             if W.get(i):
-                W[i][j] = (cij /
-                           math.sqrt((N[i] ** (1 - alpha)) * (N[j] ** alpha)))
+                W[i][j] = cij / ((N[i] ** (1 - alpha)) * (N[j] ** alpha))
             else:
-                W[i] = {j: (cij /
-                            math.sqrt((N[i] ** (1 - alpha)) * (N[j] ** alpha)))}
+                W[i] = {j: cij / ((N[i] ** (1 - alpha)) * (N[j] ** alpha))}
     return W
 
 
