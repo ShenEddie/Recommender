@@ -47,12 +47,13 @@ def split_data(data: List[List[int]], M: int, k: int, seed: int = 1234):
 
 # %% Select negative sample:
 def random_select_negative_sample(items: Dict[int, int],
-                                  items_pool: List[int]) -> Dict[int, int]:
+                                  items_pool: List[int],
+                                  ratio: int = 1) -> Dict[int, int]:
     ret = dict()
     for i in items.keys():
         ret[i] = 1  # Positive sample.
     n = 0
-    for i in range(0, len(items) * 3):
+    for i in range(0, len(items) * 3 * ratio):
         item = random.choice(items_pool)
         if item in ret:
             continue
@@ -60,7 +61,7 @@ def random_select_negative_sample(items: Dict[int, int],
             ret[item] = 0  # Negative sample.
             n += 1
             # To make sure positive & negative samples are close.
-            if n >= len(items):
+            if n >= len(items) * ratio:
                 break
     return ret
 
