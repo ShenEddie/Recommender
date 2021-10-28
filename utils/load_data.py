@@ -14,7 +14,7 @@ from typing import Union, List, Dict
 sys.path.append('../')
 try:
     from config.file_path import ml_1m_ratings_path
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     raise
 
 

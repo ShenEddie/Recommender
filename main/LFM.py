@@ -23,7 +23,7 @@ sys.path.append('../')
 try:
     from utils.load_data import load_m1_1m, transfer_list2dict
     from config.file_path import lfm_params_path
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     raise
 
 

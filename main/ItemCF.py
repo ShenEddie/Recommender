@@ -26,7 +26,7 @@ try:
     from utils.load_data import load_m1_1m, transfer_list2dict
     from config.file_path import item_cf_W_path, item_cf_W_iuf_path
     from config.file_path import item_cf_W_penalty_path, item_cf_W_normed_path
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     raise
 
 

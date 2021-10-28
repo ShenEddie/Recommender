@@ -22,7 +22,7 @@ sys.path.append('../')
 try:
     from utils.load_data import load_m1_1m, transfer_list2dict
     from config.file_path import user_cf_W_path, user_cf_W_iif_path
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     raise
 
 
