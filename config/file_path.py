@@ -11,6 +11,8 @@ import os.path
 
 pwd = r'D:\Eddie\Documents\BOSC\RecommendSystem'
 ml_1m_ratings_path = os.path.join(pwd, r'data/ml-1m/ratings.dat')
+ml_1m_users_path = os.path.join(pwd, r'data/ml-1m/users.dat')
+ml_1m_movies_path = os.path.join(pwd, r'data/ml-1m/movies.dat')
 user_cf_W_path = os.path.join(pwd, r'params/W_UserCF.pkl')
 user_cf_W_iif_path = os.path.join(pwd, r'params/W_iif_UserCF.pkl')
 item_cf_W_path = os.path.join(pwd, r'params/W_ItemCF.pkl')
