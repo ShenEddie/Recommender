@@ -10,11 +10,20 @@
 
 # %%
 # Import packages.
+import sys
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import optim
 from torch import Tensor
 from typing import Tuple
+
+sys.path.append('../')
+try:
+    from utils.load_data_FM import Preprocess, Movie1m, get_dataloader
+    from utils.session_FM import Session
+except (ImportError, ModuleNotFoundError):
+    raise
 
 
 # %%
@@ -25,7 +34,7 @@ class FactorMachine(nn.Module):
                  n_classes: int,
                  n_factors: int,
                  batch_size: int,
-                 decay):
+                 decay: float):
         super(FactorMachine, self).__init__()
         self.sparse_n_features = sparse_n_features
         self.dense_n_features = dense_n_features
@@ -72,3 +81,48 @@ class FactorMachine(nn.Module):
         l2_norm = l2_norm * self.decay / self.batch_size
         loss = cross_entropy + l2_norm
         return loss, cross_entropy, l2_norm
+
+
+# %%
+if __name__ == '__main__':
+    torch.multiprocessing.freeze_support()
+    # %%
+    # Hyper-Parameters.
+    threshold = 3
+    batch_size = 512
+    cores = 4
+    n_classes = 100
+    n_factors = 100
+    decay = 0.01
+    lr = 0.001
+    num_epoch = 300
+
+    # %%
+    preprocess = Preprocess()
+    movie_lens = Movie1m(preprocess, threshold)
+    train_dl, test_dl = get_dataloader(movie_lens.train_set,
+                                       movie_lens.test_set,
+                                       batch_size,
+                                       cores)
+
+    model = FactorMachine(
+        movie_lens.sparse_n_features,
+        movie_lens.dense_n_features,
+        n_classes,
+        n_factors,
+        batch_size,
+        decay
+    )
+    model.cuda()
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    sess = Session(model, movie_lens.max_user_id, movie_lens.max_item_id)
+
+    # %%
+    for epoch in range(num_epoch):
+        loss, cross_loss, l2_loss = sess.train(train_dl, optimizer)
+        print("epoch: {:d}, loss = [{:.6f} == {:.6f} + {:.6f}]".format(
+            epoch, loss, cross_loss, l2_loss))
+        loss, cross_loss, l2_loss, auc = sess.test(test_dl)
+        print("loss = [{:.6f} == {:.6f} + {:.6f}], auc = [{:.6f}]".format(
+            loss, cross_loss, l2_loss, auc))
+        print('\n')
