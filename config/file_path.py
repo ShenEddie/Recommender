@@ -9,7 +9,7 @@
 
 import os.path
 
-pwd = r'D:\Eddie\Documents\BOSC\RecommendSystem'
+pwd = 'D:\\datutu\\BOSC\\Recommender'
 ml_1m_ratings_path = os.path.join(pwd, r'data/ml-1m/ratings.dat')
 ml_1m_users_path = os.path.join(pwd, r'data/ml-1m/users.dat')
 ml_1m_movies_path = os.path.join(pwd, r'data/ml-1m/movies.dat')
